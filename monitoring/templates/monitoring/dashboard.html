@@ -1,0 +1,145 @@
+
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>TraceLens AI | Dashboard</title>
+
+    <link rel="stylesheet"
+          href="{% static 'monitoring/dashboard.css' %}">
+</head>
+
+<body>
+
+<header>
+    <div>
+        <div class="brand">◈ TraceLens <span>AI</span></div>
+        <div class="subtitle">LLM Observability & Evaluation</div>
+    </div>
+
+    <div class="subtitle">System Overview</div>
+</header>
+
+<main class="container">
+
+    <h1 class="page-title">Observability Dashboard</h1>
+    <p class="page-description">
+        Monitor LLM performance, request activity and evaluation quality.
+    </p>
+
+    <section class="metrics-grid">
+
+        <div class="metric-card">
+            <div class="metric-label">Total Requests</div>
+            <div class="metric-value">{{ total_requests }}</div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Successful Requests</div>
+            <div class="metric-value">
+                {{ successful_requests }}
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Average Latency</div>
+            <div class="metric-value">
+                {% if avg_latency or average_latency %}
+                    {{ avg_latency|default:average_latency|floatformat:2 }}
+                    <small>ms</small>
+                {% else %}
+                    —
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-label">Passed Evaluations</div>
+            <div class="metric-value">{{ passed_evaluations }}</div>
+        </div>
+
+    </section>
+
+    <section class="panel">
+
+        <div class="panel-header">Recent LLM Requests</div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Prompt</th>
+                        <th>Response</th>
+                        <th>Model</th>
+                        <th>Latency</th>
+                        <th>Status</th>
+                        <th>Evaluation</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for item in requests %}
+                    <tr>
+                        <td>#{{ item.id }}</td>
+
+                        <td>{{ item.prompt|truncatechars:65 }}</td>
+
+                        <td>{{ item.response|truncatechars:90 }}</td>
+
+                        <td>{{ item.model_name }}</td>
+
+                        <td>{{ item.latency_ms|floatformat:2 }} ms</td>
+
+                        <td>
+                            {% if item.status == "success" %}
+                                <span class="badge success">Success</span>
+                            {% elif item.status == "failed" %}
+                                <span class="badge failed">Failed</span>
+                            {% else %}
+                                <span class="badge neutral">Recorded</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if item.evaluation %}
+                                {% if item.evaluation.passed %}
+                                    <span class="badge success">Passed</span>
+                                {% else %}
+                                    <span class="badge failed">Failed</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge neutral">Not evaluated</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="empty">
+                            No LLM requests recorded yet.
+                            <p>
+                                Send a request through your API
+                                to populate the dashboard.
+                            </p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </section>
+
+</main>
+
+<footer class="footer">
+    TraceLens AI · Django REST Framework · AI Observability
+</footer>
+
+</body>
+</html>
